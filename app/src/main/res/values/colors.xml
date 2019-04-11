@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#FF152B38</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="white">#fafafa</color>
+    <color name="half_black">#808080</color>
+    <color name="grey">#E0E0E0</color>
+    <color name="park_a">#1194DA</color>
+    <color name="park_b">#669900</color>
+    <color name="park_null">#bfbfbf</color>
+
+</resources>
