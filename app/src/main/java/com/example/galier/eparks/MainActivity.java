@@ -1,6 +1,11 @@
 package com.example.galier.eparks;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -22,6 +27,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.kevin.library.AnimPath;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,10 +39,11 @@ import java.net.Socket;
 public class MainActivity extends AppCompatActivity {
     FloatingActionButton fab;
     private CardView cardView_a, cardView_b;
-    private ImageView carStart, carEnd;
+    private ImageView carStart, carEnd, pressView;
     private LinearLayout loading, loadingOk, loadingError;
     private long mExitTime;
     private Socket socketclient = null;
+    private static boolean isNetworkValidated;
     String TAG = MainActivity.class.getSimpleName();
 
     @Override
@@ -53,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         cardView_b = findViewById(R.id.cardView_b);
         carStart = findViewById(R.id.car_start);
         carEnd = findViewById(R.id.car_end);
+        pressView = findViewById(R.id.pressview);
         loading = findViewById(R.id.loading);
         loadingOk = findViewById(R.id.loadingOk);
         loadingError = findViewById(R.id.loadingError);
@@ -72,10 +81,70 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+//        newPaint();
+
 
     }
 
+    private void newPaint() {
+        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        Path path = new Path();
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(10.0f);
+        paint.setAntiAlias(true);
+        path.lineTo(200, 200);
+        path.lineTo(200, 400);
+        canvas.drawPath(path, paint);
+        canvas.drawPoint(100, 100, paint);
+    }
+
+
+    public void onPress(View view) {
+        AnimPath animPath = new AnimPath();
+        animPath.moveTo(0, 0);//起始点位置（相对坐标）
+        animPath.lineTo(1000, 0);
+        animPath.lineTo(1000, -720);
+        animPath.lineTo(512, -720);
+        animPath.lineTo(512, -594);
+        animPath.startAnimation(view, 10000);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e(TAG, "onResume");
+        new Thread() {
+            @Override
+            public void run() {
+                isNetworkValidated();
+            }
+        }.start();
+    }
+
+    private boolean isNetworkValidated() {
+        Runtime runtime = Runtime.getRuntime();
+        int ret = 1;
+        try {
+            Process p = runtime.exec("ping -c 3 www.baidu.com");
+            ret = p.waitFor();
+            Log.e(TAG, "Process:" + ret);
+            if (ret == 0) {
+                return true;
+            } else {
+                showSnackBar(fab, "网络没有连接，请重试");
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     Handler handler = new Handler() {
+        Runnable runnable;
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -92,12 +161,25 @@ public class MainActivity extends AppCompatActivity {
                 loading.setVisibility(View.VISIBLE);//loading
                 loadingOk.setVisibility(View.GONE);
                 loadingError.setVisibility(View.GONE);
+                pressView.setVisibility(View.VISIBLE);
                 setFlickerAnimation(carStart, true);
                 setFlickerAnimation(carEnd, true);
                 showSnackBar(fab, "准备调度，请等待");
                 carStart.setImageResource(R.drawable.ic_car2);
                 carEnd.setImageResource(R.drawable.ic_car3);
                 fab.hide();
+                runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        handler.sendEmptyMessage(103);
+                        handler.postDelayed(this, 10000);
+                    }
+                };
+                new Thread(runnable).start();
+
+            } else if (msg.what == 103) {
+                onPress(pressView);
+
             } else if (msg.what == 102) {
                 loading.setVisibility(View.GONE);//loadingOk
                 loadingOk.setVisibility(View.VISIBLE);
@@ -106,6 +188,8 @@ public class MainActivity extends AppCompatActivity {
                 setFlickerAnimation(carEnd, false);
                 carStart.setImageResource(R.drawable.ic_car3);
                 carEnd.setImageResource(R.drawable.ic_car2);
+                handler.removeCallbacks(runnable);
+                pressView.setVisibility(View.GONE);
                 fab.show();
             }
         }
@@ -165,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
                 if (socketclient != null && sb == null) {
                     handler.sendEmptyMessage(100);//连接出错判断
                 }
-                if(socketclient != null){
+                if (socketclient != null) {
                     socketclient.close();
                     Log.e(TAG, "socketclient.close()");
                 }
