@@ -9,6 +9,12 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/activity_main">
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </FrameLayout>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -208,25 +214,14 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:rotation="90"
                 android:alpha="0.2"
+                android:rotation="90"
                 android:src="@drawable/ic_road" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:rotation="90"
                 android:alpha="0.5"
-                android:src="@drawable/ic_road" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:rotation="90"
-                android:src="@drawable/ic_road" />
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:rotation="90"
                 android:src="@drawable/ic_road" />
 
@@ -277,22 +272,37 @@
                 android:layout_height="wrap_content"
                 android:rotation="90"
                 android:src="@drawable/ic_road" />
+
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:rotation="90"
                 android:src="@drawable/ic_road" />
+
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:rotation="90"
+                android:src="@drawable/ic_road" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:rotation="90"
+                android:src="@drawable/ic_road" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:alpha="0.5"
+                android:rotation="90"
                 android:src="@drawable/ic_road" />
+
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:rotation="90"
                 android:alpha="0.2"
+                android:rotation="90"
                 android:src="@drawable/ic_road" />
         </LinearLayout>
 
@@ -505,47 +515,106 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="车辆调度中..."
-            android:textSize="17sp"
-            android:textColor="@color/half_black"/>
+            android:textColor="@color/colorAccent"
+            android:textSize="17sp" />
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/loadingOk"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
         android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="horizontal"
         android:visibility="gone">
+
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="25dp"
-            android:src="@drawable/ic_ok"/>
+            android:src="@drawable/ic_ok" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="车辆调度完成!"
-            android:textSize="17sp"
-            android:textColor="@color/colorAccent" />
+            android:textColor="@color/colorAccent"
+            android:textSize="17sp" />
 
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/loadingError"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
         android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="horizontal"
         android:visibility="gone">
+
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="25dp"
-            android:src="@drawable/ic_error"/>
+            android:src="@drawable/ic_error" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="网络连接出错,请检查！"
-            android:textSize="17sp"
-            android:textColor="@color/half_black" />
+            android:textColor="@color/half_black"
+            android:textSize="17sp" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/loadTip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="点击右侧"
+                android:textSize="15sp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="红色"
+                android:textSize="15sp"
+                android:textColor="@color/colorAccent"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="按钮开始调度        "
+                android:textSize="15sp"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="点击上方"
+                android:textSize="15sp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="被调度车辆"
+                android:textSize="15sp"
+                android:textColor="@color/park_b"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="可查看监控"
+                android:textSize="15sp"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 

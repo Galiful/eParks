@@ -28,4 +28,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation project(':mylibrary')
     implementation project(':library')
+    implementation files('libs/EZOpenSDK_V4.8.3.20180530.jar')
+    implementation files('libs/EZUIKit_2.0.jar')
+    implementation files('libs/gson-2.7.jar')
 }

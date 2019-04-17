@@ -46,4 +46,7 @@ public class AnimPath {
         mView.setTranslationY(p.mY);
     }
 
+    public void setRotation(View view,float value){
+        view.animate().rotation(value);
+    }
 }

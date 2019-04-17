@@ -1,16 +1,23 @@
 package com.example.galier.eparks;
 
-import android.content.Context;
+import android.Manifest;
+import android.app.Application;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -18,32 +25,47 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ezvizuikit.open.EZUIError;
+import com.ezvizuikit.open.EZUIKit;
+import com.ezvizuikit.open.EZUIPlayer;
 import com.github.kevin.library.AnimPath;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
     FloatingActionButton fab;
     private CardView cardView_a, cardView_b;
     private ImageView carStart, carEnd, pressView;
-    private LinearLayout loading, loadingOk, loadingError;
+    private LinearLayout loading, loadingOk, loadingError,loadingTip;
     private long mExitTime;
     private Socket socketclient = null;
     private static boolean isNetworkValidated;
+    public static EZUIPlayer mPlayer;
+    public Application application = MainActivity.this.getApplication();
     String TAG = MainActivity.class.getSimpleName();
 
     @Override
@@ -52,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        requestPermission();
         initView();
     }
 
@@ -65,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         loading = findViewById(R.id.loading);
         loadingOk = findViewById(R.id.loadingOk);
         loadingError = findViewById(R.id.loadingError);
+        loadingTip = findViewById(R.id.loadTip);
         fab = findViewById(R.id.fab);
         cardView_a.setOnClickListener(cardViewOnClickListener);
         cardView_b.setOnClickListener(cardViewOnClickListener);
@@ -81,10 +104,132 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        newPaint();
 
+        carStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog();
+            }
+        });
+
+
+        EZUIKit.initWithAppKey(getApplication(), "");
+        EZUIKit.setAccessToken("at.ddy4gvp544swgskhac2l8a9abaernce0-7eek1xhnul-0w5ydxu-70kpdv75a");
+//        EZUIPlayer();
 
     }
+    public void requestPermission() {
+        //动态获取权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            List<String> permissionList = new ArrayList<>();
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissionList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                permissionList.add(Manifest.permission.READ_PHONE_STATE);
+            }
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            }
+            if (!permissionList.isEmpty()) {
+                String[] permissions = permissionList.toArray(new String[permissionList.size()]);
+                ActivityCompat.requestPermissions(MainActivity.this, permissions, 1);
+            }
+        }
+    }
+
+    private void dialog(){
+
+//        Dialog dialog = new Dialog(this,R.style.Theme_AppCompat_Dialog);
+        CommonDialog dialog = new CommonDialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);// 去掉dialog的标题
+//        dialog.setContentView(R.layout.dialog);
+//        ((ViewGroup)linePlayer.getParent()).removeView(linePlayer);
+//        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
+////        dialog.addContentView(linePlayer,layoutParams);
+//
+//        dialog.setContentView(linePlayer,layoutParams);
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                mPlayer.stopPlay();
+//                linePlayer.setVisibility(View.GONE);
+                Log.e("MainActivity","stopPlay");
+            }
+        });
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+//                mPlayer.startPlay();
+//                linePlayer.setVisibility(View.VISIBLE);
+            }
+        });
+        dialog.show();
+//        EZUIPlayer();
+
+    }
+
+//
+    public void EZUIPlayer(){
+        //获取EZUIPlayer实例
+        mPlayer = (EZUIPlayer) findViewById(R.id.player_ui);
+
+//        mPlayer.setSurfaceSize(500, 400);
+
+        mPlayer.setLoadingView(initProgressBar());
+
+        //初始化EZUIKit
+        EZUIKit.initWithAppKey(getApplication(), "");
+
+        //设置授权token
+        EZUIKit.setAccessToken("at.ddy4gvp544swgskhac2l8a9abaernce0-7eek1xhnul-0w5ydxu-70kpdv75a");
+
+        //设置播放回调callback
+        mPlayer.setCallBack(callBack);
+
+        //设置播放参数
+        mPlayer.setUrl("ezopen://open.ys7.com/C10647386/1.live");
+
+        //开始播放
+//        mPlayer.startPlay();
+    }
+    public View initProgressBar() {
+        ProgressBar  mLoadView = new ProgressBar(this);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp.addRule(RelativeLayout.CENTER_IN_PARENT);
+        mLoadView.setLayoutParams(lp);
+        return mLoadView;
+    }
+
+    public EZUIPlayer.EZUIPlayerCallBack callBack = new EZUIPlayer.EZUIPlayerCallBack(){
+        public void onPlayFinish(){
+            Log.e("MainActivity","EZUIPlayerCallBack: onPlayFinish");
+        }
+        public void onVideoSizeChange(int var1, int var2){
+            Log.d("MainActivity","onVideoSizeChange  width = "+var1+"   height = "+var2);
+        }
+        @Override
+        public void onPlayFail(EZUIError ezuiError) {
+            Log.e("MainActivity","EZUIPlayerCallBack: onPlayFail"+ezuiError.getErrorString());
+        }
+        @Override
+        public void onPlaySuccess() {
+            Log.e("MainActivity","EZUIPlayerCallBack: onPlaySuccess");
+        }
+        @Override
+        public void onPlayTime(Calendar calendar) {
+            Log.d("MainActivity","onPlayTime calendar = "+calendar.getTime().toString());
+        }
+        @Override
+        public void onPrepared() {
+//            mPlayer.startPlay();
+            Log.e("MainActivity","EZUIPlayerCallBack: onPrepared");
+        }
+    };
+
+
 
     private void newPaint() {
         Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
@@ -123,6 +268,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }.start();
     }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        //释放资源
+        mPlayer.releasePlayer();
+    }
 
     private boolean isNetworkValidated() {
         Runtime runtime = Runtime.getRuntime();
@@ -152,15 +304,19 @@ public class MainActivity extends AppCompatActivity {
                 loading.setVisibility(View.GONE);
                 loadingOk.setVisibility(View.GONE);
                 loadingError.setVisibility(View.VISIBLE);//loadingError
+                loadingTip.setVisibility(View.GONE);
                 setFlickerAnimation(carStart, false);
                 setFlickerAnimation(carEnd, false);
                 carStart.setImageResource(R.drawable.ic_car2);
                 carEnd.setImageResource(R.drawable.ic_car3);
+                handler.removeCallbacks(runnable);
+                pressView.setVisibility(View.GONE);
                 fab.show();
             } else if (msg.what == 101) {
                 loading.setVisibility(View.VISIBLE);//loading
                 loadingOk.setVisibility(View.GONE);
                 loadingError.setVisibility(View.GONE);
+                loadingTip.setVisibility(View.GONE);
                 pressView.setVisibility(View.VISIBLE);
                 setFlickerAnimation(carStart, true);
                 setFlickerAnimation(carEnd, true);
@@ -181,9 +337,10 @@ public class MainActivity extends AppCompatActivity {
                 onPress(pressView);
 
             } else if (msg.what == 102) {
-                loading.setVisibility(View.GONE);//loadingOk
-                loadingOk.setVisibility(View.VISIBLE);
+                loading.setVisibility(View.GONE);
+                loadingOk.setVisibility(View.VISIBLE);//loadingOk
                 loadingError.setVisibility(View.GONE);
+                loadingTip.setVisibility(View.GONE);
                 setFlickerAnimation(carStart, false);
                 setFlickerAnimation(carEnd, false);
                 carStart.setImageResource(R.drawable.ic_car3);
@@ -222,15 +379,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void connectServerWithSocket() {
         try {
-            socketclient = new Socket("10.151.232.250", 8989);
+            //61.191.217.247:8899
+            socketclient = new Socket("10.151.232.250", 8899);
             if (socketclient.isConnected()) {
                 handler.sendEmptyMessage(101);
             }
+//
+            String socketData = "";
             BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(socketclient.getOutputStream()));
-            String socketData = "YH CM 0 :" + "M1" + "|3|" + "111111"
-                    + " 0\\r\\n";
-            writer.write(socketData);
+            writer.write(socketData.replace("\n", " ") + "\n");
             writer.flush();
 
             while (true) {
