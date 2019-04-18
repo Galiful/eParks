@@ -18,11 +18,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -33,6 +35,7 @@ import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -113,7 +116,7 @@ public class MainActivity extends AppCompatActivity{
         });
 
 
-        EZUIKit.initWithAppKey(getApplication(), "");
+        EZUIKit.initWithAppKey(getApplication(), "bacf0478454a4f7eaedf9e0bb946055b");
         EZUIKit.setAccessToken("at.ddy4gvp544swgskhac2l8a9abaernce0-7eek1xhnul-0w5ydxu-70kpdv75a");
 //        EZUIPlayer();
 
@@ -284,6 +287,8 @@ public class MainActivity extends AppCompatActivity{
             ret = p.waitFor();
             Log.e(TAG, "Process:" + ret);
             if (ret == 0) {
+                showSnackBar(fab, "网络已连接");
+                loadingError.setVisibility(View.GONE);
                 return true;
             } else {
                 showSnackBar(fab, "网络没有连接，请重试");
@@ -337,8 +342,8 @@ public class MainActivity extends AppCompatActivity{
                 onPress(pressView);
 
             } else if (msg.what == 102) {
-                loading.setVisibility(View.GONE);
-                loadingOk.setVisibility(View.VISIBLE);//loadingOk
+                loading.setVisibility(View.GONE);//loadingOk
+                loadingOk.setVisibility(View.VISIBLE);
                 loadingError.setVisibility(View.GONE);
                 loadingTip.setVisibility(View.GONE);
                 setFlickerAnimation(carStart, false);
@@ -380,7 +385,7 @@ public class MainActivity extends AppCompatActivity{
     private void connectServerWithSocket() {
         try {
             //61.191.217.247:8899
-            socketclient = new Socket("10.151.232.250", 8899);
+            socketclient = new Socket("61.191.217.247", 8899);
             if (socketclient.isConnected()) {
                 handler.sendEmptyMessage(101);
             }
@@ -442,6 +447,31 @@ public class MainActivity extends AppCompatActivity{
         }
         return super.onKeyDown(keyCode, event);
     }
+    private void showCustomizeDialog() {
+        /* @setView 装入自定义View ==> R.layout.dialog_customize
+         * 由于dialog_customize.xml只放置了一个EditView，因此和图8一样
+         * dialog_customize.xml可自定义更复杂的View
+         */
+        AlertDialog.Builder customizeDialog =
+                new AlertDialog.Builder(MainActivity.this);
+        final View dialogView = LayoutInflater.from(MainActivity.this)
+                .inflate(R.layout.dialog_customize,null);
+        customizeDialog.setTitle("设置目的地经纬度：");
+        customizeDialog.setView(dialogView);
+        customizeDialog.setPositiveButton("确定",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // 获取EditView中的输入内容
+                        EditText edit_text =
+                                (EditText) dialogView.findViewById(R.id.edit_text);
+                        Toast.makeText(MainActivity.this,
+                                edit_text.getText().toString(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+        customizeDialog.show();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -459,7 +489,8 @@ public class MainActivity extends AppCompatActivity{
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+            showCustomizeDialog();
+//            return true;
         }
 
         return super.onOptionsItemSelected(item);
